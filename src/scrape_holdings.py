@@ -9,6 +9,7 @@ import time
 import os
 import re
 import unicodedata
+import csv
 
 FILINGS_CSV = "data/filings.csv"
 OUTPUT_CSV = "data/holdings.csv"
@@ -20,9 +21,10 @@ def setup_driver():
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--log-level=3') 
+    options.add_argument('--log-level=3')
     options.add_argument('--disable-logging')
     options.add_argument('--blink-settings=imagesEnabled=false')
+    options.add_argument('--enable-unsafe-swiftshader')  # ← fixes WebGL fallback warning
     return webdriver.Chrome(options=options)
 
 def scrape_holdings_for_filing(driver, filing):
@@ -114,12 +116,13 @@ def scrape_holdings_for_filing(driver, filing):
         if not holdings:
             print(f"[!] No COM holdings found for: {filing['fund_name']} | {filing['quarter']}")
             with open("data/no_com_found.csv", "a", encoding="utf-8") as f:
-                f.write(f"{filing['fund_name']},{filing['quarter']},{filing['filing_url']}\n")
+                f.write(f"\"{filing['fund_name']}\",\"{filing['quarter']}\",\"{filing['filing_url']}\"\n")
+
 
     except Exception as e:
         print(f"[x] Failed to scrape {filing['fund_name']} {filing['quarter']}: {e}")
         with open("data/no_com_found.csv", "a", encoding="utf-8") as f:
-            f.write(f"{filing['fund_name']},{filing['quarter']},{filing['filing_url']}\n")
+            f.write(f"\"{filing['fund_name']}\",\"{filing['quarter']}\",\"{filing['filing_url']}\"\n")
         raise
 
     return holdings
@@ -170,7 +173,7 @@ def write_holdings_chunk(chunk, is_first_chunk=False):
     if chunk:
         df_chunk = pd.DataFrame(chunk)
         df_chunk = df_chunk.drop_duplicates(subset=["fund_name", "quarter", "stock_symbol"])
-        df_chunk.to_csv(OUTPUT_CSV, mode='a', header=is_first_chunk, index=False)
+        df_chunk.to_csv(OUTPUT_CSV, mode='a', header=is_first_chunk, index=False, quotechar='"', quoting=csv.QUOTE_ALL)
         print(f"[✓] Wrote {len(df_chunk)} holdings to {OUTPUT_CSV}")
 
 if __name__ == "__main__":
@@ -181,7 +184,7 @@ if __name__ == "__main__":
     df = df.drop_duplicates(subset=["fund_name", "quarter", "filing_url"])
 
     skip_funds = {
-          "Abdiel Capital Advisors, LP",
+    "Abdiel Capital Advisors, LP",
     "AKRE CAPITAL MANAGEMENT LLC",
     "Altimeter Capital Management, LP",
     "APPALOOSA LP",
@@ -225,35 +228,35 @@ if __name__ == "__main__":
     "Marathon Partners Equity Management, LLC",
     "Matrix Capital Management Company, LP",
     "Melvin Capital Management LP",
-    "MILLENNIUM MANAGEMENT LLC",
-    "MILLER VALUE PARTNERS, LLC",
-    "OAKTREE CAPITAL MANAGEMENT LP",
-    "PAULSON & CO. INC.",
-    "RENAISSANCE TECHNOLOGIES LLC",
-    "Rokos Capital Management LLP",
-    "Saba Capital Management, L.P.",
-    "Saber Capital Managment, LLC",
-    "SANDS CAPITAL MANAGEMENT, LLC",
-    "Scion Asset Management, LLC",
-    "Senvest Management, LLC",
-    "ShawSpring Partners LLC",
-    "SOROS FUND MANAGEMENT LLC",
-    "SPRUCE HOUSE INVESTMENT MANAGEMENT LLC",
-    "STATE STREET CORP",
-    "Stockbridge Partners LLC",
-    "TCI FUND MANAGEMENT LTD",
-    "Third Point LLC",
-    "TIGER GLOBAL MANAGEMENT LLC",
-    "TPG Group Holdings (SBS) Advisors, Inc.",
-    "TUDOR INVESTMENT CORP ET AL",
-    "VANGUARD GROUP INC",
-    "VIKING GLOBAL INVESTORS LP",
-    "Virtu Financial LLC",
-    "Whale Rock Capital Management LLC",
-    "XTX Topco Ltd",
-    "XXEC, Inc.",
-    "YALE UNIVERSITY",
-    "York Capital Management Global Advisors, LLC"
+    #"MILLENNIUM MANAGEMENT LLC",
+    #"MILLER VALUE PARTNERS, LLC",
+    #"OAKTREE CAPITAL MANAGEMENT LP",
+    #"PAULSON & CO. INC.",
+    #"RENAISSANCE TECHNOLOGIES LLC",
+    #"Rokos Capital Management LLP",
+    #"Saba Capital Management, L.P.",
+    #"Saber Capital Managment, LLC",
+    #"SANDS CAPITAL MANAGEMENT, LLC",
+    #"Scion Asset Management, LLC",
+    #"Senvest Management, LLC",
+    #"ShawSpring Partners LLC",
+    #"SOROS FUND MANAGEMENT LLC",
+    #"SPRUCE HOUSE INVESTMENT MANAGEMENT LLC",
+    #"STATE STREET CORP",
+    #"Stockbridge Partners LLC",
+    #"TCI FUND MANAGEMENT LTD",
+    #"Third Point LLC",
+    #"TIGER GLOBAL MANAGEMENT LLC",
+    #"TPG Group Holdings (SBS) Advisors, Inc.",
+    #"TUDOR INVESTMENT CORP ET AL",
+    #"VANGUARD GROUP INC",
+    #"VIKING GLOBAL INVESTORS LP",
+    #"Virtu Financial LLC",
+    #"Whale Rock Capital Management LLC",
+    #"XTX Topco Ltd",
+    #"XXEC, Inc.",
+    #"YALE UNIVERSITY",
+    #"York Capital Management Global Advisors, LLC"
     }
 
     all_holdings = []
