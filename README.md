@@ -1,4 +1,4 @@
-13F-HR Holdings Analyzer
+p13F-HR Holdings Analyzer
 
 Project Description:
 - This project scrapes institutional 13F-HR filings from 13f.info, extracts COM-class stock holdings, and analyzes quarterly changes to infer transaction activity (buy, sell, or hold) for each fund-stock pair.
@@ -54,14 +54,14 @@ Scalability and Robustness
 - All data pipelines are deduplicated by fund_name, quarter, and stock_symbol to prevent duplicate entries in the final output.
 
 Repository Structure
-
+```plaintext
 project/
 ├── data/
 │   ├── managers.csv                      # All scraped manager metadata
 │   ├── filings.csv                       # All 13F-HR filings metadata
 │   ├── holdings.csv                      # All raw COM-class holdings
 │   ├── final_com_holdings_analysis.csv   # Final output with transaction inference
-│   └── no_com_found.csv                  # Log of filings without COM-class holdings
+│   ├── no_com_found.csv                  # Log of filings without COM-class holdings
 │   └── cl_debug_log.csv                  # Log of all filings, for debugging purposes (if needed)
 ├── src/
 │   ├── scrape_managers.py                # Manager list scraper
