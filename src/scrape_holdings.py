@@ -24,7 +24,7 @@ def setup_driver():
     options.add_argument('--log-level=3')
     options.add_argument('--disable-logging')
     options.add_argument('--blink-settings=imagesEnabled=false')
-    options.add_argument('--enable-unsafe-swiftshader')  # ← fixes WebGL fallback warning
+    options.add_argument('--enable-unsafe-swiftshader')  
     return webdriver.Chrome(options=options)
 
 def scrape_holdings_for_filing(driver, filing):
@@ -35,7 +35,7 @@ def scrape_holdings_for_filing(driver, filing):
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "table thead tr th"))
         )
-        time.sleep(1)  # wait for dynamic content like span.text to finish rendering
+        time.sleep(1) 
 
 
         headers = driver.find_elements(By.CSS_SELECTOR, "table thead tr th")
@@ -177,87 +177,11 @@ def write_holdings_chunk(chunk, is_first_chunk=False):
         print(f"[✓] Wrote {len(df_chunk)} holdings to {OUTPUT_CSV}")
 
 if __name__ == "__main__":
-#    if os.path.exists(OUTPUT_CSV):
-#        os.remove(OUTPUT_CSV)
+    if os.path.exists(OUTPUT_CSV):
+        os.remove(OUTPUT_CSV)
 
     df = pd.read_csv(FILINGS_CSV, quotechar='"', skipinitialspace=True)
     df = df.drop_duplicates(subset=["fund_name", "quarter", "filing_url"])
-
-    skip_funds = {
-    "Abdiel Capital Advisors, LP",
-    "AKRE CAPITAL MANAGEMENT LLC",
-    "Altimeter Capital Management, LP",
-    "APPALOOSA LP",
-    "AQR CAPITAL MANAGEMENT LLC",
-    "ARK Investment Management LLC",
-    "Atreides Management, LP",
-    "BAILLIE GIFFORD & CO",
-    "Balyasny Asset Management L.P.",
-    "BAUPOST GROUP LLC/MA",
-    "Berkshire Hathaway Inc",
-    "BlackRock Inc.",
-    "Blackstone Inc.",
-    "BNP PARIBAS ASSET MANAGEMENT Holding S.A.",
-    "Bridgewater Associates, LP",
-    "Carlyle Group Inc.",
-    "Chanos & Co LP",
-    "CITADEL ADVISORS LLC",
-    "COATUE MANAGEMENT LLC",
-    "COOPERMAN LEON G",
-    "D1 Capital Partners L.P.",
-    "DAILY JOURNAL CORP",
-    "D. E. Shaw & Co., Inc.",
-    "Dragoneer Investment Group, LLC",
-    "Duquesne Family Office LLC",
-    "Elliott Investment Management L.P.",
-    "Ensign Peak Advisors, Inc",
-    "FARALLON CAPITAL MANAGEMENT LLC",
-    "Fundsmith LLP",
-    "GATES FOUNDATION TRUST",
-    "GEODE CAPITAL MANAGEMENT, LLC",
-    "GLENVIEW CAPITAL MANAGEMENT, LLC",
-    "GOLDMAN SACHS GROUP INC",
-    "GREENLIGHT CAPITAL INC",
-    "HAYMAN CAPITAL MANAGEMENT, L.P.",
-    "HHLR ADVISORS, LTD.",
-    "Himalaya Capital Management LLC",
-    "ICAHN CARL C",
-    "JANA PARTNERS LLC",
-    "KING STREET CAPITAL MANAGEMENT, L.P.",
-    "LONE PINE CAPITAL LLC",
-    "Marathon Partners Equity Management, LLC",
-    "Matrix Capital Management Company, LP",
-    "Melvin Capital Management LP",
-    #"MILLENNIUM MANAGEMENT LLC",
-    #"MILLER VALUE PARTNERS, LLC",
-    #"OAKTREE CAPITAL MANAGEMENT LP",
-    #"PAULSON & CO. INC.",
-    #"RENAISSANCE TECHNOLOGIES LLC",
-    #"Rokos Capital Management LLP",
-    #"Saba Capital Management, L.P.",
-    #"Saber Capital Managment, LLC",
-    #"SANDS CAPITAL MANAGEMENT, LLC",
-    #"Scion Asset Management, LLC",
-    #"Senvest Management, LLC",
-    #"ShawSpring Partners LLC",
-    #"SOROS FUND MANAGEMENT LLC",
-    #"SPRUCE HOUSE INVESTMENT MANAGEMENT LLC",
-    #"STATE STREET CORP",
-    #"Stockbridge Partners LLC",
-    #"TCI FUND MANAGEMENT LTD",
-    #"Third Point LLC",
-    #"TIGER GLOBAL MANAGEMENT LLC",
-    #"TPG Group Holdings (SBS) Advisors, Inc.",
-    #"TUDOR INVESTMENT CORP ET AL",
-    #"VANGUARD GROUP INC",
-    #"VIKING GLOBAL INVESTORS LP",
-    #"Virtu Financial LLC",
-    #"Whale Rock Capital Management LLC",
-    #"XTX Topco Ltd",
-    #"XXEC, Inc.",
-    #"YALE UNIVERSITY",
-    #"York Capital Management Global Advisors, LLC"
-    }
 
     all_holdings = []
     failed_urls = []
@@ -265,11 +189,6 @@ if __name__ == "__main__":
 
     for i, row in df.iterrows():
         filing = row.to_dict()
-        fund_name_upper = filing["fund_name"].strip().upper()
-
-        if fund_name_upper in {name.upper() for name in skip_funds}:
-            print(f"[→] Skipping: {filing['fund_name']} | {filing['quarter']} (Skipped)")
-            continue
 
         print(f"[→] Scraping: {filing['fund_name']} | {filing['quarter']} ({i+1}/{len(df)})")
 

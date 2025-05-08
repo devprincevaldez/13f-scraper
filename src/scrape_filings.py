@@ -89,7 +89,7 @@ def scrape_all_13fhr_filings():
 
     for i, row in df.iterrows():
         manager = row.to_dict()
-        print(f"🔍 Scraping filings for: {manager.get('fund_name')} ({i+1}/{len(df)})")
+        print(f"Scraping filings for: {manager.get('fund_name')} ({i+1}/{len(df)})")
         filings = scrape_filings_for_manager(manager)
         all_filings.extend(filings)
         time.sleep(0.5)  

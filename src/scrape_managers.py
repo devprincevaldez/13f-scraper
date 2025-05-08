@@ -78,7 +78,6 @@ def scrape_all_managers():
     return managers
 
 if __name__ == "__main__":
-    # Run the scraper and save results to CSV
     managers_data = scrape_all_managers()
     df = pd.DataFrame(managers_data)
     df.to_csv("data/managers.csv", index=False, quotechar='"', quoting=1)
