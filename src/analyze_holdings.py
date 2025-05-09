@@ -85,12 +85,18 @@ def compare_adjacent_quarters(df):
                 change = curr["shares"] - prev["shares"]
                 pct_change = round((change / prev["shares"]) * 100, 2) if prev["shares"] != 0 else None
 
-                if change > 0:
-                    action = "buy"
-                elif change < 0:
-                    action = "sell"
+                if prev_row.empty:
+                    action = "buy_new"
+                elif curr_row.empty:
+                    action = "sell_full"
                 else:
-                    action = "hold"
+                    if change > 0:
+                        action = "buy_additional"
+                    elif change < 0:
+                        action = "sell_partial"
+                    else:
+                        action = "hold"
+
 
                 row = {
                     "fund_name": curr["fund_name"],

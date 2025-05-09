@@ -1,55 +1,41 @@
-# src/scrape_managers.py
-
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+import string
 
-# Base URLs for scraping
 BASE_URL = "https://13f.info"
-MANAGERS_URL = f"{BASE_URL}/managers"
+MANAGER_PATHS = list(string.ascii_lowercase) + ["0"]  
+MANAGER_URLS = [f"{BASE_URL}/managers/{letter}" for letter in MANAGER_PATHS]
 
-def scrape_all_managers():
-    """
-    Scrape the list of all fund managers from https://13f.info/managers.
-
-    Returns:
-        List[Dict]: Each dict contains manager metadata including:
-                    - fund_name
-                    - location
-                    - most_recent_filing
-                    - num_holdings
-                    - holdings_value
-                    - manager_url (link to manager profile)
-    """
-    print("Fetching all fund managers...")
-
-    response = requests.get(MANAGERS_URL)
+def scrape_manager_page(url):
+    print(f"[→] Scraping: {url}")
+    response = requests.get(url)
     if response.status_code != 200:
-        raise Exception(f"Failed to load page: {MANAGERS_URL} (status {response.status_code})")
+        print(f"[!] Failed to load {url} (status {response.status_code})")
+        return []
 
     soup = BeautifulSoup(response.text, "html.parser")
     table = soup.find("table")
 
     if not table:
-        raise Exception("Could not find managers table on the page.")
+        print(f"[!] No table found at {url}")
+        return []
 
-    # Extract headers and map header names to column indexes
     headers = table.find("thead").find_all("th")
     header_map = {th.get_text(strip=True).lower(): idx for idx, th in enumerate(headers)}
 
     required_headers = ["name", "location", "most recent filing", "num holdings", "holdings value"]
-    for rh in required_headers:
-        if rh not in header_map:
-            raise Exception(f"Missing expected header: {rh}")
+    if not all(h in header_map for h in required_headers):
+        print(f"[!] Missing required headers at {url}")
+        return []
 
-    # Parse each row in the table body
     rows = table.find("tbody").find_all("tr")
     managers = []
 
     for row in rows:
         cols = row.find_all("td")
         if len(cols) < len(header_map):
-            continue  # Skip malformed or incomplete rows
+            continue
 
         try:
             fund_col = cols[header_map["name"]]
@@ -74,11 +60,15 @@ def scrape_all_managers():
             print(f"[!] Skipped row due to error: {e}")
             continue
 
-    print(f"Fetched {len(managers)} managers.")
     return managers
 
 if __name__ == "__main__":
-    managers_data = scrape_all_managers()
-    df = pd.DataFrame(managers_data)
+    all_managers = []
+
+    for url in MANAGER_URLS:
+        managers = scrape_manager_page(url)
+        all_managers.extend(managers)
+
+    df = pd.DataFrame(all_managers)
     df.to_csv("data/managers.csv", index=False, quotechar='"', quoting=1)
-    print("Saved to data/managers.csv")
+    print(f"[✓] Saved {len(df)} managers to data/managers.csv")
